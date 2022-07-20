@@ -7,13 +7,8 @@ sudo apt upgrade -y
 sudo apt install -y apache2
 
 # Install php
-sudo apt install -y php
+sudo apt install -y php libapache2-mod-php
 
-# Install apache-php module
-sudo apt instal -y libapache2-mod-php
-
-# Enable module
-sudo a2enmod php
-
-# Reload apache
-sudo systemctl reload apache2
+# Remove test index and place php test file at document root
+sudo rm /var/www/html/index.html
+sudo cp index.php /var/www/html/index.php
