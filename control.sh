@@ -2,11 +2,13 @@
 USER=root
 PASSFILE='.credfile'
 NODE_LIST='nodelist' 
-JOB='jobdef.sh'
+CONFIG='jobdef.sh'
 WEB_DOCS='web_docs'
-chmod +x $JOB
 
-echo "# # # # Reading from node server list in $NODE_LIST..."
+echo "           ~~~~~~~~~~~~~~~~~~~~ Establishing Connection with Nodes ~~~~~~~~~~~~~~~~~~~~             "
+echo "          "
+echo "                         ***Reading from node server list in $NODE_LIST***                          "
+echo "          "
 while read -r line;
 do
         if [ ! -z "$line" ]; then # This will handle accidental empty lines; which I encountered during testing
@@ -17,11 +19,16 @@ do
                 #  that were outside the scope of this assignment. 
                 #  This obviously will raise concern for performance issues but for the scope of this exercise, it will be overlooked.
                         
-                echo "# # # # Copying local web file(s) to server: $line" # Obviously, we will change this code to accomodate where we have our webdocs in a more practical env
-                sshpass -f$PASSFILE scp -r $WEB_DOCS $USER@$line:
-                echo "# # # # logging into $line..."
-                sshpass -f$PASSFILE ssh $USER@$line 'bash -s' < $JOB
+                # Obviously, we will change this code to accomodate where we have our webdocs in a more practical env
+                echo "                         ***Copying local web file(s) to server: $line***                          "
+                echo "          "
+                sshpass -f$PASSFILE scp -r $WEB_DOCS $USER@$line: || exit
+                echo "                                     ***logging into $line***                                      "
+                echo "          "
+                sshpass -f$PASSFILE ssh $USER@$line 'bash -s' < $CONFIG || exit
+                echo "                                   ***Testing Server: $line***                                     "
+                curl -sv "http://$line" || exit
         fi
 done < $NODE_LIST
 
-echo "All node server(s) have been configured!"
+echo "       ~~~~~~~~~~~~~~~~~~~~ All node server(s) have been configured! ~~~~~~~~~~~~~~~~~~~~           "
