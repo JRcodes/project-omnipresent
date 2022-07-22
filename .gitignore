@@ -1,0 +1,4 @@
+# dev
+.venv
+ci_cd.sh
+.credfile
