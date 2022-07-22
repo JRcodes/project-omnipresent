@@ -39,10 +39,9 @@ if [[ $1 = "init" ]]; then
     echo " 2. updates.sh: This will contain any update executions to be run on host and propogated on nodes."
     echo "                This can include installs, updates, and deletes"
     echo " 3. web_docs: This is where all documents for the web server will reside. Please place your source code for your website here"
-fi
 
 # Configuring host using our Job definitions config script
-if [[ $1 = "set" ]]; then
+elif [[ $1 = "set" ]]; then
     if [ -f $CONFIG ]; then
         echo "|----------------------------------------------------------------------------------------------|"
         echo "|  C  O   N   F   I   G   U   R   I   N   G       H   O   S   T       S   E   R   V   E   R    |"
@@ -57,10 +56,9 @@ if [[ $1 = "set" ]]; then
     echo "           ~~~~~~~~~~~~~~~~~~~~ HOST CONFIGURATION COMPLETE! ~~~~~~~~~~~~~~~~~~~~               "
     echo "          "
     echo " You can run <./almight.sh push> to propogate the configurations to node servers now; or later when you're comfortable after testing"
-fi
 
 # Configuring node servers using our config script
-if [[ $1 = "push" ]]; then
+elif [[ $1 = "push" ]]; then
     if [ -f $CONTROLLER ]; then
         echo "|--------------------------------------------------------------------------------------------------|"
         echo "|  C  O   N   F   I   G   U   R   I   N   G       N   O   D   E       S   E   R   V   E   R   S    |"
@@ -74,10 +72,9 @@ if [[ $1 = "push" ]]; then
     fi
     echo "            ~~~~~~~~~~~~~~~~~~~~ NODE CONFIGURATION COMPLETE! ~~~~~~~~~~~~~~~~~~~~                 "
     echo "          "
-fi
 
 # Update host configuration
-if [[ $1 = "update" ]]; then
+elif [[ $1 = "update" ]]; then
     if [ -f $UPDATE_CONFIG ]; then
         echo "|----------------------------------------------------------------------------------|"
         echo "|  U  P   D   A   T   I   N   G       H   O   S   T       S   E   R   V   E   R    |"
@@ -94,10 +91,10 @@ if [[ $1 = "update" ]]; then
         echo "          "
         echo " You can run <./almight.sh apply-updates> to propogate the configurations to node servers now;"
         echo "or later when you're comfortable after testing"
-fi
+
 
 # Update host configuration
-if [[ $1 = "apply-update" ]]; then
+elif [[ $1 = "apply-update" ]]; then
     if [ -f $UPDATE_CONFIG ]; then
         echo "|--------------------------------------------------------------------------------------|"
         echo "|  U  P   D   A   T   I   N   G        N  O   D   E       S   E   R   V   E   R   S    |"
@@ -114,4 +111,35 @@ if [[ $1 = "apply-update" ]]; then
         echo "          "
         echo " You can run <./almight.sh apply-updates> to propogate the configurations to node servers now;"
         echo "or later when you're comfortable after testing"
+
+# One of commands and abstractions
+elif [[ $1 = "install" ]]; then  # Allows direct install on the host using tool
+    sudo apt install -y $2 || exit
+
+elif [[ $1 = "remote-install" ]]; then # Allows direct install on host and nodes using tool
+    sudo apt install -y $2 || exit
+    ./$CONTROLLER $1 $2 || exit
+
+elif [[ $1 = "remove" ]]; then  # Allows direct removal of packages on the host using tool
+    sudo apt remove -y $2 || exit
+
+elif [[ $1 = "remote-remove" ]]; then # Allows direct removal of packages on host and nodes using tool
+    sudo apt remove -y $2 || exit
+    ./$CONTROLLER $1 $2 || exit
+
+elif [[ $1 = "upgrade" ]]; then  # Allows direct upgrade of packages on the host using tool
+    sudo apt upgrade -y $2 || exit
+
+elif [[ $1 = "remote-upgrade" ]]; then # Allows upgrade of packages on host and nodes using tool
+    sudo apt upgrade -y $2 || exit
+    ./$CONTROLLER $1 $2 || exit
+
+elif [[ $1 = "view" ]]; then  # Allows user to view host file metadata
+    sudo stat $2 || exit
+
+elif [[ $1 = "remote-view" ]]; then # Allows user to view file metadata per node ip
+    ./$CONTROLLER $1 $2 $3 || exit # Where $2 is the node ip and $3 is the file name
+
+else
+    echo "This script requires a arguments"
 fi
