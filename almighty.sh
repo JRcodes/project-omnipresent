@@ -94,4 +94,24 @@ if [[ $1 = "update" ]]; then
         echo "          "
         echo " You can run <./almight.sh apply-updates> to propogate the configurations to node servers now;"
         echo "or later when you're comfortable after testing"
+fi
+
+# Update host configuration
+if [[ $1 = "apply-update" ]]; then
+    if [ -f $UPDATE_CONFIG ]; then
+        echo "|--------------------------------------------------------------------------------------|"
+        echo "|  U  P   D   A   T   I   N   G        N  O   D   E       S   E   R   V   E   R   S    |"
+        echo "|______________________________________________________________________________________|"
+        
+        ./$CONTROLLER $UPDATE_CONFIG || exit
+    else
+        echo "ERROR!!! Update configuration file, [updates.sh] is missing."
+        echo "Create one, run <./almight.sh init> to add to config bundle,"
+        echo "then run <./almight.sh set> to configure host server"
+        exit
     fi
+        echo "      ~~~~~~~~~~~~~~~~~~~~ HOST CONFIGURATION UPDATED! ~~~~~~~~~~~~~~~~~~~~         "
+        echo "          "
+        echo " You can run <./almight.sh apply-updates> to propogate the configurations to node servers now;"
+        echo "or later when you're comfortable after testing"
+fi
