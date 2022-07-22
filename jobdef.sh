@@ -10,11 +10,13 @@ echo "          "
 # Upgrade services
 sudo apt upgrade -y || exit
 
+echo "          "
 echo "                               ***Installing Apache2***                                     "
 echo "          "
 # Install apache
 sudo apt install apache2 -y || exit
 
+echo "          "
 echo "                                 ***Installing PHP***                                       "
 echo "          "
 # Install php
@@ -25,6 +27,7 @@ if [ -e $DOCROOT/index.html ]; then
     sudo rm /var/www/html/index.html || exit
 fi
 
+echo "          "
 echo "                             ***Moving some files around***                                 "
 echo "          "
 if [ ! -e $DOCROOT/index.php ]; then
