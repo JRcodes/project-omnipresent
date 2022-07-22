@@ -1,5 +1,5 @@
 #! /bin/bash
-DEPENDENCIES='dependencies'
+DEPENDENCIES='dependencies.sh'
 NODE_LIST='nodelist' 
 
 # Bootstrap Phase
@@ -15,11 +15,7 @@ if [[ $1 = "init" ]]; then
 
     echo "                ~~~~~~~~~~~~~~~~~~~~ BOOTSTRAPPING DEPENDENCIES! ~~~~~~~~~~~~~~~~~~~~                     "
     echo "          "
-    while read -r line; do
-        if [ ! -z "$line" ]; then
-            sudo apt install -y $line -v
-        fi
-    done < $DEPENDENCIES
+    ./$DEPENDENCIES
     echo "             ~~~~~~~~~~~~~~~~~~~~ YOUR PACKAGES HAVE BEEN DELIVERED! ~~~~~~~~~~~~~~~~~~~~                 "
     echo "          "
 
