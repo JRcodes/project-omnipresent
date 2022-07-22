@@ -3,6 +3,7 @@ DEPENDENCIES='dependencies.sh'
 NODE_LIST='nodelist' 
 CONFIG='jobdef.sh'
 CONTROLLER='control.sh'
+UPDATE_CONFIG='updates.sh'
 
 # Bootstrap Phase
 if [[ $1 = "init" ]]; then
@@ -17,7 +18,7 @@ if [[ $1 = "init" ]]; then
 
     echo "                ~~~~~~~~~~~~~~~~~~~~ BOOTSTRAPPING DEPENDENCIES! ~~~~~~~~~~~~~~~~~~~~                     "
     echo "          "
-    ./$DEPENDENCIES
+    ./$DEPENDENCIES || exit
     echo "             ~~~~~~~~~~~~~~~~~~~~ YOUR PACKAGES HAVE BEEN DELIVERED! ~~~~~~~~~~~~~~~~~~~~                 "
     echo "          "
 
@@ -30,7 +31,7 @@ if [[ $1 = "init" ]]; then
                 echo $line
                 ssh-keyscan -H $line >> ~/.ssh/known_hosts -v
             fi
-    done < $NODE_LIST
+    done < $NODE_LIST || exit
     echo "                -----------------------------------------------------------------------                   "
     echo "          "
     echo " BOOTSTRAPPING IS DONE! MAKE SURE THE FOLLOWING FILES ARE CONFIGURED"
@@ -47,7 +48,7 @@ if [[ $1 = "set" ]]; then
         echo "|  C  O   N   F   I   G   U   R   I   N   G       H   O   S   T       S   E   R   V   E   R    |"
         echo "|______________________________________________________________________________________________|"
         
-        ./$CONFIG
+        ./$CONFIG || exit
     else
         echo "ERROR!!! Job configuration file, [jobdef.sh] is missing."
         echo "Create one, run <./almight.sh init> to add to config bundle, then run <./almight.sh set> to configure host server"
@@ -65,7 +66,7 @@ if [[ $1 = "push" ]]; then
         echo "|  C  O   N   F   I   G   U   R   I   N   G       N   O   D   E       S   E   R   V   E   R   S    |"
         echo "|__________________________________________________________________________________________________|"
         
-        ./$CONTROLLER
+        ./$CONTROLLER $CONFIG || exit
     else
         echo "ERROR!!! Job configuration file, [jobdef.sh] is missing."
         echo "Create one, run <./almight.sh init> to add to config bundle, then run <./almight.sh set> to configure host server"
@@ -74,3 +75,23 @@ if [[ $1 = "push" ]]; then
     echo "            ~~~~~~~~~~~~~~~~~~~~ NODE CONFIGURATION COMPLETE! ~~~~~~~~~~~~~~~~~~~~                 "
     echo "          "
 fi
+
+# Update host configuration
+if [[ $1 = "update" ]]; then
+    if [ -f $UPDATE_CONFIG ]; then
+        echo "|----------------------------------------------------------------------------------|"
+        echo "|  U  P   D   A   T   I   N   G       H   O   S   T       S   E   R   V   E   R    |"
+        echo "|__________________________________________________________________________________|"
+        
+        ./$UPDATE_CONFIG || exit
+    else
+        echo "ERROR!!! Job configuration file, [updates.sh] is missing."
+        echo "Create one, run <./almight.sh init> to add to config bundle,"
+        echo "then run <./almight.sh set> to configure host server"
+        exit
+    fi
+        echo "      ~~~~~~~~~~~~~~~~~~~~ HOST CONFIGURATION UPDATED! ~~~~~~~~~~~~~~~~~~~~         "
+        echo "          "
+        echo " You can run <./almight.sh apply-updates> to propogate the configurations to node servers now;"
+        echo "or later when you're comfortable after testing"
+    fi

@@ -2,7 +2,7 @@
 USER=root
 PASSFILE='.credfile'
 NODE_LIST='nodelist' 
-CONFIG='jobdef.sh'
+CONFIG=$1
 WEB_DOCS='web_docs'
 
 echo "           ~~~~~~~~~~~~~~~~~~~~ Establishing Connection with Nodes ~~~~~~~~~~~~~~~~~~~~             "
