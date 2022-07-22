@@ -17,4 +17,9 @@ The following improvements can be considered for this tooling:
 - Standalone commands
 
 ### Installation
-- Clone <a href="https://github.com/JRcodes/project-omnipresent/tree/main" target="_blank">this repo</a>
+- Clone <a href="https://github.com/JRcodes/project-omnipresent/tree/main" target="_blank">this repo</a>. You can clone it directly into your host server(Make sure you have git properly configured) or download the zip contents and push it to your server via scp and unzip it there
+
+### Usage
+- Our entry point for our tool is the script in `almight.sh`. This script takes in command line arguments and our tool performs based on which argument we pass to it
+- There are 4 configuration files that are customizable to the desire of the user. For this project, they have been already configured to provision a php web app running on apache2. These files and their purpose are:
+    1. `jobdef.sh`: This is where you define your initial server configuration in. In our case, this installs apache2 and php
