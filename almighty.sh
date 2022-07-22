@@ -2,6 +2,7 @@
 DEPENDENCIES='dependencies.sh'
 NODE_LIST='nodelist' 
 CONFIG='jobdef.sh'
+CONTROLLER='control.sh'
 
 # Bootstrap Phase
 if [[ $1 = "init" ]]; then
@@ -56,6 +57,20 @@ if [[ $1 = "set" ]]; then
     echo "          "
     echo " You can run <./almight.sh push> to propogate the configurations to node servers now; or later when you're comfortable after testing"
 fi
+
+# Configuring node servers using our config script
+if [[ $1 = "push" ]]; then
+    if [ -f $CONTROLLER ]; then
+        echo "|--------------------------------------------------------------------------------------------------|"
+        echo "|  C  O   N   F   I   G   U   R   I   N   G       N   O   D   E       S   E   R   V   E   R   S    |"
+        echo "|__________________________________________________________________________________________________|"
         
-
-
+        ./$CONTROLLER
+    else
+        echo "ERROR!!! Job configuration file, [jobdef.sh] is missing."
+        echo "Create one, run <./almight.sh init> to add to config bundle, then run <./almight.sh set> to configure host server"
+        exit
+    fi
+    echo "            ~~~~~~~~~~~~~~~~~~~~ NODE CONFIGURATION COMPLETE! ~~~~~~~~~~~~~~~~~~~~                 "
+    echo "          "
+fi
