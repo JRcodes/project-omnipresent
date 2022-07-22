@@ -2,28 +2,38 @@
 
 DOCROOT='/var/www/html'
 
+echo "           ~~~~~~~~~~~~~~~~~~~~ Applying Configurations! ~~~~~~~~~~~~~~~~~~~~               "
+echo "          "
+
+echo "                                ***Updating Services***                                     "
+echo "          "
 # Upgrade services
-sudo apt upgrade -y
+sudo apt upgrade -y || exit
 
-# Install apache: check if installed if not then install
-echo "# # # # # Checking if apache2 is installed...."
-sudo apt install apache2 -y
+echo "                               ***Installing Apache2***                                     "
+echo "          "
+# Install apache
+sudo apt install apache2 -y || exit
 
-# Install php: check if installed if not then install
-echo "# # # # # Checking if php is installed....\n"
-psudo apt install php -y
+echo "                                 ***Installing PHP***                                       "
+echo "          "
+# Install php
+sudo apt install php -y || exit
 
 # Remove test index and place php test file at document root
 if [ -e $DOCROOT/index.html ]; then
-    sudo rm /var/www/html/index.html
+    sudo rm /var/www/html/index.html || exit
 fi
 
+echo "                             ***Moving some files around***                                 "
+echo "          "
 if [ ! -e $DOCROOT/index.php ]; then
-    echo "# # # # # Copying over web documents to document root...\n."
-    sudo cp ~/web_docs/index.php $DOCROOT/index.php
-    sudo systemctl restart apache2.service
-    echo "# # # # # Configuration Complete\n!"
+    sudo cp ~/web_docs/index.php $DOCROOT/index.php || exit
+    sudo systemctl restart apache2.service || exit
+    echo "                              ***Configuration Applied***                                   "
+    echo "          "
 else
-    sudo systemctl restart apache2.service
-    echo "# # # # # Configuration Complete!\n"
+    sudo systemctl restart apache2.service || exit
+    echo "                              ***Configuration Applied***                                   "
+    echo "          "
 fi
