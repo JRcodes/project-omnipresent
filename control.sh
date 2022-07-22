@@ -1,6 +1,6 @@
 #! /bin/bash
 USER=root
-PASSFILE='.credfile'
+PASSFILE='.credfile' # For password requirement for the servers in this exercise. If it doesn't exist, you'll have to create one
 NODE_LIST='nodelist' 
 CONFIG=$1
 WEB_DOCS='web_docs'
