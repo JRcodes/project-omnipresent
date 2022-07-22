@@ -16,9 +16,7 @@ do
                 #  The answer is YES. That approach was considered and required the usage of third party tools 
                 #  that were outside the scope of this assignment. 
                 #  This obviously will raise concern for performance issues but for the scope of this exercise, it will be overlooked.
-                       
-                echo "# # # # Adding server to known_hosts"
-                ssh-keyscan -H $line >> ~/.ssh/known_hosts # Abstract to initial bootstrap
+                        
                 echo "# # # # Copying local web file(s) to server: $line" # Obviously, we will change this code to accomodate where we have our webdocs in a more practical env
                 sshpass -f$PASSFILE scp -r $WEB_DOCS $USER@$line:
                 echo "# # # # logging into $line..."
