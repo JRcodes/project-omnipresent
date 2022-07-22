@@ -29,3 +29,6 @@ The following improvements can be considered for this tooling:
     3. `dependencies.sh`: Any non-standard packages that you want to use can be installed in here. The code is written, all the user has to do is pass in an array of dependencies as indicated in the script(Check Improvements for notes on this script)
     4. `nodelist` this config file contains the list of node server ips and is pulled in by  `control.sh` whenever a call is required to be made to the node servers
     5. `.credfile` this file is intentionally made a hidden file and is excluded from the repository. In our use case where a password is required, the user will configure the passoword for the nodes here. This is simplified since in our use case all the nodes share the same password
+- As already stated, the entry point of the tool takes in command line arguments. This helps us pinpoint the usage and purpose of the user's configuration requirements. So far, there are 13 distinct arguments that the tool takes. The first 3 should be done in the correct order to correctly configure the user's servers
+    The following should be performed in order and in the root directory of the git repo or the unzipped project:
+    1. `./almighty.sh init`: This initializes the host server. Only run this 
