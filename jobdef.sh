@@ -36,11 +36,9 @@ fi
 if [ ! -e $DOCROOT/index.php ]; then
     echo "# # # # # Copying over web documents to document root...\n."
     sudo cp ~/web_docs/index.php $DOCROOT/index.php
-    sudo systemctl restart apache2
-    sudo systemctl restart php
+    sudo systemctl restart apache2.service
     echo "# # # # # Configuration Complete\n!"
 else
-    sudo systemctl restart apache2
-    sudo systemctl restart php
+    sudo systemctl restart apache2.service
     echo "# # # # # Configuration Complete!\n"
 fi
