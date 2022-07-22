@@ -35,11 +35,13 @@ The following improvements can be considered for this tooling:
     1. `./almighty.sh init`: This initializes the host server by installing the required dependencies in `bootstrap.sh` and adds the nodes in `nodelist` to the known hosts(well be making ssh calls to them from the host server). Only run this on the host server
     2. `./almight.sh set`: This goes ahead and installs the configuration in `jobdef.sh` onto the host server. Whatever that is defined in `jobdef.sh` will be installed on the host
     3. `./almighty.sh push`: Hope you got that Naruto reference(If that's your thing lol). This calls `control.sh`. The script there will establish an scp connection to move our web documents in this use case to the root of the node servers. It then calls `jobdef.sh` to propogate the configuration to the node servers.
-    4. `./almighty.sh install dependency`: This directly installs the dependency specified
-    5. `./almighty.sh remove dependency`: This directly removes the dependency specifed
-    6. `./almighty.sh upgrade dependency`: This directly upgrades the dependency specified
-    7. `./almighty.sh view /path/to/file`: This allows the user to view the metadata of the specified file in the path
-    8. `./almighty.sh remote-view X.XX.XXX.XXX /path/to/file`: This allows the user to view the metadata of a file on a specific node by passing in the node ip as `X.XX.XXX.XXX`
+    4. `./almighty.sh update`: This will run the configurations specified in `updates.sh` script to the host server
+    5. `./almighty.sh apply-update`: This will apply the updates above to the node servers
+    6. `./almighty.sh install dependency`: This directly installs the dependency specified
+    7. `./almighty.sh remove dependency`: This directly removes the dependency specifed
+    8. `./almighty.sh upgrade dependency`: This directly upgrades the dependency specified
+    9. `./almighty.sh view /path/to/file`: This allows the user to view the metadata of the specified file in the path
+    10. `./almighty.sh remote-view X.XX.XXX.XXX /path/to/file`: This allows the user to view the metadata of a file on a specific node by passing in the node ip as `X.XX.XXX.XXX`
     Note that all actions involving propogating changes to node will pass through the `control.sh` script
 
 ##                                                                           !!!! ENJOY AND HAVE FUN !!!!

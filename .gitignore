@@ -2,3 +2,4 @@
 .venv
 ci_cd.sh
 .credfile
+commits.txt
