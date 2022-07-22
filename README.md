@@ -16,3 +16,5 @@ The following improvements can be considered for this tooling:
 - Updates
 - Standalone commands
 
+### Installation
+- Clone <a href="https://github.com/JRcodes/project-omnipresent/tree/main" target="_blank">this repo</a>
