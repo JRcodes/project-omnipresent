@@ -3,3 +3,6 @@
 ci_cd.sh
 .credfile
 commits.txt
+
+# demo
+demo/.keys/

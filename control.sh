@@ -1,70 +1,86 @@
 #! /bin/bash
-USER=root
-PASSFILE='.credfile' # For password requirement for the servers in this exercise. If it doesn't exist, you'll have to create one
-NODE_LIST='nodelist' 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Nodes are reached over SSH with key-based auth as a sudo-capable (non-root) user.
+# Override any of these with environment variables.
+USER="${OMNI_USER:-deploy}"
+SSH_KEY="${OMNI_SSH_KEY:-}"
+NODE_LIST="${OMNI_NODELIST:-$SCRIPT_DIR/nodelist}"
+WEB_DOCS="$SCRIPT_DIR/web_docs"
 CONFIG=$1
-WEB_DOCS='web_docs'
+
+# BatchMode makes ssh fail fast instead of hanging on a password prompt
+SSH_OPTS=(-o BatchMode=yes)
+if [ -n "$SSH_KEY" ]; then
+        SSH_OPTS+=(-i "$SSH_KEY")
+fi
+
+# Runs a command on a node. -n stops ssh from reading stdin, which would otherwise
+# swallow the rest of the node list inside the while-read loops below
+remote() {
+        local node=$1
+        shift
+        ssh -n "${SSH_OPTS[@]}" "$USER@$node" "$@"
+}
+
+# Quotes an argument so it reaches the remote shell as a single literal word
+q() {
+        printf '%q' "$1"
+}
 
 echo "           ~~~~~~~~~~~~~~~~~~~~ Establishing Connection with Nodes ~~~~~~~~~~~~~~~~~~~~             "
 echo "          "
 if [[ $1 = "remote-install" ]]; then
         while read -r line; do
-                if [ ! -z "$line" ]; then
+                if [ -n "$line" ]; then
                         echo "                                ***logging into $line***                                 "
                         echo "          "
-                        sshpass -f$PASSFILE ssh $USER@$line "sudo apt install -y $2" || exit
+                        remote "$line" "sudo DEBIAN_FRONTEND=noninteractive apt-get install -y $(q "$2")" || exit
                         echo "                                   ***Testing Server: $line***                                     "
                         curl -sv "http://$line"
                 fi
-        done < $NODE_LIST
+        done < "$NODE_LIST"
 elif [[ $1 = "remote-remove" ]]; then
         while read -r line; do
-                if [ ! -z "$line" ]; then
+                if [ -n "$line" ]; then
                         echo "                                ***logging into $line***                                 "
                         echo "          "
-                        sshpass -f$PASSFILE ssh $USER@$line "sudo apt remove -y $2" || exit
+                        remote "$line" "sudo apt-get remove -y $(q "$2")" || exit
                         echo "                                   ***Testing Server: $line***                                     "
                         curl -sv "http://$line"
                 fi
-        done < $NODE_LIST
+        done < "$NODE_LIST"
 elif [[ $1 = "remote-upgrade" ]]; then
         while read -r line; do
-                if [ ! -z "$line" ]; then
+                if [ -n "$line" ]; then
                         echo "                                ***logging into $line***                                 "
                         echo "          "
-                        sshpass -f$PASSFILE ssh $USER@$line "sudo apt upgrade -y $2" || exit
+                        remote "$line" "sudo DEBIAN_FRONTEND=noninteractive apt-get install --only-upgrade -y $(q "$2")" || exit
                         echo "                                   ***Testing Server: $line***                                     "
                         curl -sv "http://$line"
                 fi
-        done < $NODE_LIST
+        done < "$NODE_LIST"
 elif [[ $1 = "remote-view" ]]; then
-        echo "                                ***logging into $line***                                 "
+        echo "                                ***logging into $2***                                 "
         echo "          "
-        sshpass -f$PASSFILE ssh $USER@$2 "sudo stat $3" || exit
-        echo "                                   ***Testing Server: $line***                                     "
+        remote "$2" "sudo stat $(q "$3")" || exit
 else
         while read -r line; do
-                if [ ! -z "$line" ]; then # This will handle accidental empty lines; which I encountered during testing
+                if [ -n "$line" ]; then # This will handle accidental empty lines; which I encountered during testing
 
-                        # It may be asked if any sort of asyncronous application of the following 
-                        #  executions can be used in the case where we have to configure a large server list.  
-                        #  The answer is YES. That approach was considered and required the usage of third party tools 
-                        #  that were outside the scope of this assignment. 
-                        #  This obviously will raise concern for performance issues but for the scope of this exercise, it will be overlooked.
-                                
-                        # Obviously, we will change this code to accomodate where we have our webdocs in a more practical env
+                        # Nodes are configured one at a time. Running them in parallel would speed up
+                        #  large node lists; see Future improvements in the README.
 
                         echo "                         ***Copying local web file(s) to server: $line***                          "
                         echo "          "
-                        sshpass -f$PASSFILE scp -r $WEB_DOCS $USER@$line: || exit
+                        scp -r "${SSH_OPTS[@]}" "$WEB_DOCS" "$USER@$line:" < /dev/null || exit
                         echo "                                     ***logging into $line***                                      "
                         echo "          "
-                        sshpass -f$PASSFILE ssh $USER@$line 'bash -s' < $CONFIG || exit
+                        ssh "${SSH_OPTS[@]}" "$USER@$line" 'bash -s' < "$CONFIG" || exit
                         echo "                                   ***Testing Server: $line***                                     "
                         curl -sv "http://$line"
                 fi
-        done < $NODE_LIST
+        done < "$NODE_LIST"
 fi
 
 echo "       ~~~~~~~~~~~~~~~~~~~~ All node server(s) have been configured! ~~~~~~~~~~~~~~~~~~~~           "
-

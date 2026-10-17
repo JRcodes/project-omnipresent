@@ -1,0 +1,30 @@
+# Local demo environment: one control host and two nodes. See `make demo`.
+services:
+  control:
+    build: demo/control
+    volumes:
+      - .:/omni
+      - ./demo/.keys:/keys:ro
+    environment:
+      OMNI_USER: deploy
+      OMNI_SSH_KEY: /root/.ssh/id_ed25519
+      OMNI_NODELIST: /omni/demo/nodelist
+    ports:
+      - "8080:80"
+    depends_on: [node1, node2]
+
+  node1:
+    build: demo/node
+    hostname: node1
+    volumes:
+      - ./demo/.keys:/keys:ro
+    ports:
+      - "8081:80"
+
+  node2:
+    build: demo/node
+    hostname: node2
+    volumes:
+      - ./demo/.keys:/keys:ro
+    ports:
+      - "8082:80"

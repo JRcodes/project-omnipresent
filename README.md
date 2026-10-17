@@ -4,7 +4,18 @@
 - There is an entry point script `almighty.sh` to be run on the host server which pulls in other peripheral scripts to achieve installation, updates and removal of configurations on the node servers provided in a document `nodelist`. This script works in conjunction with the `control.sh` script when any interaction is required with the node servers
 - When the host server is configured, changes are not immediately send to the node server. These changes have to be manually triggered in order to appear on the nodes. This allows extensive testing on host before those changes are moved on the the node servers through a push method.
 
-#### Improvements:
+#### Improvements made to the original architecture:
+The host-node, push-based design is unchanged. The following improvements were made on top of the first version:
+- **Key-based SSH instead of passwords:** the original version logged into nodes as `root` with a shared password read from a `.credfile` via `sshpass`. Nodes are now reached with SSH keys as a non-root, sudo-capable user (`deploy` by default), password login is never attempted, and connections fail fast instead of hanging on a prompt.
+- **Every node gets every change:** in `remote-install`, `remote-remove` and `remote-upgrade`, `ssh` was reading from the same input as the loop over `nodelist`, so only the first node was ever updated. Each call now runs with its input detached, and every node in the list is reached.
+- **Web documents stay in sync:** `jobdef.sh` used to copy `index.php` only if it wasn't already on the server, so later edits never reached the nodes. It now syncs everything in `web_docs` on every `push`.
+- **Safer command handling:** arguments are quoted throughout and escaped before being sent to a node's shell, so package names and file paths can't be used to inject commands.
+- **Runs from anywhere:** scripts find their files relative to the repo instead of the current directory or the home folder, and the node user, SSH key and node list can be set with `OMNI_USER`, `OMNI_SSH_KEY` and `OMNI_NODELIST`.
+- **Unattended installs:** package installs no longer stop for confirmation or configuration prompts, and package lists are refreshed before installing.
+- **Clearer feedback:** running with no or unknown arguments prints usage, error paths exit with a failure status, and misleading or misspelled messages are corrected.
+- **A local test environment:** `make demo` starts a control host and two nodes in Docker so the whole workflow can be run and checked on one machine (see Try it locally).
+
+#### Future improvements:
 The following improvements can be considered for this tooling:
 - Implementation of the entry point can be abstracting to act as an agent instead on the node side in order to facilitate a pull method of updating servers. A cron job can be set to periodically check for updates on the host server and pull in changes as need. This was the initial approach but was scratched due to time constraints
 - Addition functionality can be added to compare file drift before any updates are made to the server
@@ -17,31 +28,42 @@ The following improvements can be considered for this tooling:
 - Updates
 - Standalone commands
 
+#### Try it locally
+You only need Docker. This starts a control host and two Ubuntu nodes in containers, then runs `init`, `set` and `push` against them:
+```
+make demo
+```
+When it finishes, each server serves the PHP page: [localhost:8080](http://localhost:8080) (host), [localhost:8081](http://localhost:8081) and [localhost:8082](http://localhost:8082) (nodes). Run any other command with `docker compose exec control ./almighty.sh <command>`, and `make demo-down` to clean up.
+
 #### Installation
-- Clone <a href="https://github.com/JRcodes/project-omnipresent/tree/main" target="_blank">this repo</a>. You can clone it directly into ythe host server(Make sure you have git properly configured) or download the zip contents and push it to your server via scp and unzip it there
+- Clone <a href="https://github.com/JRcodes/project-omnipresent/tree/main" target="_blank">this repo</a> onto the host server, or download the zip and copy it there with scp.
+- On each node, create a non-root user with passwordless sudo (`deploy` by default) and add the host's SSH public key to that user's `~/.ssh/authorized_keys`. The tool only uses key-based SSH; it never handles passwords.
+- Optional environment variables on the host:
+    - `OMNI_USER`: the user to log into nodes as (default `deploy`)
+    - `OMNI_SSH_KEY`: path to the private key to use (default: your normal SSH key)
+    - `OMNI_NODELIST`: path to the node list (default `nodelist` in the repo)
 
 #### Usage
-- The entry point for the tool is the script in `almight.sh`. This script takes in command line arguments and the tool performs based on which argument we pass to it
+- The entry point for the tool is the script in `almighty.sh`. This script takes in command line arguments and the tool performs based on which argument we pass to it
 - A secondary point is the `control.sh` script which handles all calls to the node servers
-- There are 5 configuration files that are customizable to the desire of the user. For this project, they have been already configured to provision a php web app running on apache2. These files and their purpose are:
+- There are 4 configuration files that are customizable to the desire of the user. For this project, they have been already configured to provision a php web app running on apache2. These files and their purpose are:
     1. `jobdef.sh`: This is where you define your initial server configuration in. In this case, the script installs apache2 and php
     2. `updates.sh`: This is where you define any subsequent updates to your servers. We have an exemplar script that routinely installs MySQL server
-    3. `dependencies.sh`: Any non-standard packages that you want to use can be installed in here. The code is written, all the user has to do is pass in an array of dependencies as indicated in the script(Check Improvements for notes on this script)
-    4. `nodelist` this config file contains the list of node server ips and is pulled in by  `control.sh` whenever a call is required to be made to the node servers
-    5. `.credfile` this file is intentionally made a hidden file and is excluded from the repository. In our use case where a password is required, the user will configure the passoword for the nodes here. This is simplified since in our use case all the nodes share the same password
-- As already stated, the entry point of the tool takes in command line arguments. This helps us pinpoint the usage and purpose of the user's configuration requirements. So far, there are 13 distinct arguments that the tool takes. The first 3 should be done in the correct order to correctly configure the user's servers
+    3. `dependencies.sh`: Any packages the host needs before it can manage nodes are installed here. All the user has to do is pass in an array of dependencies as indicated in the script (check Future improvements for notes on this script)
+    4. `nodelist`: the list of node server IPs or hostnames, one per line, pulled in by `control.sh` whenever a call is made to the node servers
+- As already stated, the entry point of the tool takes in command line arguments. This helps us pinpoint the usage and purpose of the user's configuration requirements. There are 13 distinct commands (run `./almighty.sh` with no arguments to list them) that the tool takes. The first 3 should be done in the correct order to correctly configure the user's servers
 
 - The 1 through 3 should be performed in order. After the host and node servers are configured using the first three, 4 through 8 can be used by themselves or in combination with one another to maintain all servers. To save reading time, also know that apart from `update` and it's counterpart `apply-update`, the rest of the commands will have a `remote` prefix to show that the action will be applied to the nodes as well eg. `install` will have `remote-install` as it's counterpart. Special Attention will be given to `remote-view` when we get that argument:
-    1. `./almighty.sh init`: This initializes the host server by installing the required dependencies in `bootstrap.sh` and adds the nodes in `nodelist` to the known hosts(well be making ssh calls to them from the host server). Only run this on the host server
-    2. `./almight.sh set`: This goes ahead and installs the configuration in `jobdef.sh` onto the host server. Whatever that is defined in `jobdef.sh` will be installed on the host
-    3. `./almighty.sh push`: Hope you got that Naruto reference(If that's your thing lol). This calls `control.sh`. The script there will establish an scp connection to move our web documents in this use case to the root of the node servers. It then calls `jobdef.sh` to propogate the configuration to the node servers.
+    1. `./almighty.sh init`: This initializes the host server by installing the required dependencies in `dependencies.sh` and adds the nodes in `nodelist` to the known hosts(we'll be making ssh calls to them from the host server). Only run this on the host server
+    2. `./almighty.sh set`: This goes ahead and installs the configuration in `jobdef.sh` onto the host server. Whatever that is defined in `jobdef.sh` will be installed on the host
+    3. `./almighty.sh push`: Hope you got that Naruto reference(If that's your thing lol). This calls `control.sh`. The script there uses scp to copy our web documents in this use case to the root of the node servers. It then calls `jobdef.sh` to propogate the configuration to the node servers.
     4. `./almighty.sh update`: This will run the configurations specified in `updates.sh` script to the host server
     5. `./almighty.sh apply-update`: This will apply the updates above to the node servers
     6. `./almighty.sh install dependency`: This directly installs the dependency specified
-    7. `./almighty.sh remove dependency`: This directly removes the dependency specifed
+    7. `./almighty.sh remove dependency`: This directly removes the dependency specified
     8. `./almighty.sh upgrade dependency`: This directly upgrades the dependency specified
     9. `./almighty.sh view /path/to/file`: This allows the user to view the metadata of the specified file in the path
-    10. `./almighty.sh remote-view X.XX.XXX.XXX /path/to/file`: This allows the user to view the metadata of a file on a specific node by passing in the node ip as `X.XX.XXX.XXX`
+    10. `./almighty.sh remote-view <node> /path/to/file`: This allows the user to view the metadata of a file on a specific node by passing in its IP or hostname
     Note that all actions involving propogating changes to node will pass through the `control.sh` script
 
 ##                                                                           !!!! ENJOY AND HAVE FUN !!!!
