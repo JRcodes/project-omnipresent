@@ -4,8 +4,8 @@
 # Write commands to apply any changes that you require to run on your server
 dependencies=( mysql-server ) # Pass in your dependencies into this array
 
-for i in ${dependencies[@]}
+sudo apt-get update || exit
+for i in "${dependencies[@]}"
 do
-    sudo apt install -y $i || exit
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install -y "$i" || exit
 done
-

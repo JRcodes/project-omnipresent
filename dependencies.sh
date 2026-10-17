@@ -2,9 +2,10 @@
 
 # Simple installations to bootstrap host
 # Write commands to install pre-required dependencies here
-dependencies=( sshpass ) # Pass in your dependencies into this array
+dependencies=( openssh-client curl ) # Pass in your dependencies into this array
 
-for i in ${dependencies[@]}
+sudo apt-get update || exit
+for i in "${dependencies[@]}"
 do
-    sudo apt install $i 
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install -y "$i" || exit
 done
