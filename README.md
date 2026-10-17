@@ -1,4 +1,7 @@
 ### PROJECT OMNIPRESENT: A PUSH BASED CONFIGURATION MANAGEMENT TOOL
+
+> **Heads up:** this is a fun attempt at building a configuration management tool from scratch in Bash, mostly to learn how tools like Ansible work under the hood. It's agentless and push-based over SSH like Ansible, but it runs plain scripts rather than declaring how each server should end up, so it isn't idempotent and doesn't detect drift. Use it to learn and experiment, not to manage production servers.
+
 #### The architecture:
 - This tool uses a host-node relationship where changes made on the host can be propogated to node servers configured within the tool.
 - There is an entry point script `almighty.sh` to be run on the host server which pulls in other peripheral scripts to achieve installation, updates and removal of configurations on the node servers provided in a document `nodelist`. This script works in conjunction with the `control.sh` script when any interaction is required with the node servers
