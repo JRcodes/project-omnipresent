@@ -5,7 +5,7 @@
 - When the host server is configured, changes are not immediately send to the node server. These changes have to be manually triggered in order to appear on the nodes. This allows extensive testing on host before those changes are moved on the the node servers through a push method.
 
 #### Improvements made to the original architecture:
-The host-node, push-based design is unchanged. The following improvements were made on top of the first version:
+The host-node, push-based design is unchanged. The following improvements were made on top of the first version ([v1.0.0](https://github.com/JRcodes/project-omnipresent/tree/v1.0.0)); see the [CHANGELOG](CHANGELOG.md) for details:
 - **Key-based SSH instead of passwords:** the original version logged into nodes as `root` with a shared password read from a `.credfile` via `sshpass`. Nodes are now reached with SSH keys as a non-root, sudo-capable user (`deploy` by default), password login is never attempted, and connections fail fast instead of hanging on a prompt.
 - **Every node gets every change:** in `remote-install`, `remote-remove` and `remote-upgrade`, `ssh` was reading from the same input as the loop over `nodelist`, so only the first node was ever updated. Each call now runs with its input detached, and every node in the list is reached.
 - **Web documents stay in sync:** `jobdef.sh` used to copy `index.php` only if it wasn't already on the server, so later edits never reached the nodes. It now syncs everything in `web_docs` on every `push`.
